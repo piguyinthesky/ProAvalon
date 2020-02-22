@@ -1,7 +1,21 @@
 import express from 'express';
 import errorHandler from 'errorhandler';
 import cors from 'cors';
+import lusca from 'lusca';
+import mongo from 'connect-mongo';
+import session from 'express-session';
+import mongoose from 'mongoose';
 import logger from './util/logger';
+
+const MongoStore = mongo(session);
+
+const mongoUrl = process.env.MONGODB_URI || process.env.MONGODB_URI_LOCAL || '';
+
+mongoose.connect(mongoUrl, { useNewUrlParser: true }).catch((err) => {
+  logger.error(
+    `Error connecting to MongoDB. Please make sure it is running. ${err}`,
+  );
+});
 
 const app = express();
 
@@ -9,9 +23,27 @@ app.set('port', process.env.PORT || 3001);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(
+  session({
+    resave: true,
+    saveUninitialized: false,
+    secret: process.env.SESSION_SECRET || 'keyboard cat',
+    store: new MongoStore({
+      url: mongoUrl,
+      autoReconnect: true,
+    }),
+  }),
+);
+app.use(lusca.xframe('SAMEORIGIN'));
+app.use(lusca.xssProtection(true));
+
+// app.use((req, res, next) => {
+//   res.locals.user = req.user;
+//   next();
+// });
 
 app.get('/', (_req, res) => {
-  res.send('Hello World!12345 asdf');
+  res.send('Hello World! 12345 asdf');
 });
 
 app.use(errorHandler());

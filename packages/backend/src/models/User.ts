@@ -131,27 +131,34 @@ const userSchema = new mongoose.Schema(
 
 /**
  * Password hash middleware.
- * TODO: get rid of return statements once consistent-return is disabled
  */
 userSchema.pre('save', function save(next) {
   const user = this as UserDocument;
-  if (!user.isModified('password')) {
-    return next();
+
+  if (user.isModified('username')) {
+    user.usernameLower = user.username.toLowerCase();
   }
-  return bcrypt.genSalt(10, (err: mongoose.Error | undefined, salt: string) => {
+
+  if (!user.isModified('password')) {
+    next();
+    return;
+  }
+  bcrypt.genSalt(10, (err, salt) => {
     if (err) {
-      return next(err);
+      next(err);
+      return;
     }
-    return bcrypt.hash(
+    bcrypt.hash(
       user.password,
       salt,
       null,
       (e: mongoose.Error, hash: string) => {
         if (e) {
-          return next(e);
+          next(e);
+          return;
         }
         user.password = hash;
-        return next();
+        next();
       },
     );
   });

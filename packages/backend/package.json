@@ -10,7 +10,7 @@
     "build": "tsc",
     "start": "nodemon build/app.js",
     "dev": "ts-node-dev ./src/app.ts",
-    "lint": "eslint './**/*.{js,jsx,ts,tsx}' --max-warnings 0",
+    "lint": "eslint --fix './**/*.{js,jsx,ts,tsx}' --max-warnings 0",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watchAll"
   },
@@ -65,6 +65,7 @@
     "jest": "^25.1.0",
     "lint-staged": "^10.0.7",
     "prettier": "1.19.1",
+    "prettier-eslint": "^9.0.1",
     "ts-node-dev": "^1.0.0-pre.44",
     "typescript": "^3.7.5"
   }

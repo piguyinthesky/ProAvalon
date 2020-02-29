@@ -21,6 +21,7 @@ mongoose.connect(mongoUrl, { useNewUrlParser: true }).catch((err) => {
   logger.error(
     `Error connecting to MongoDB. Please make sure it is running. ${err}`,
   );
+  process.exit(1);
 });
 
 const app = express();

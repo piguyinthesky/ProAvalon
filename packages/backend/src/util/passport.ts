@@ -22,35 +22,34 @@ passport.deserializeUser((id, done) => {
  */
 passport.use(
   new LocalStrategy(
-    {
-      usernameField: 'email',
-    },
-    (username, password, done) => {
-      User.findOne(
-        {
+    { usernameField: 'email' }, // TODO figure out what the usernameField actually is once the frontend gets set up
+    async (username, password, done) => {
+      try {
+        const user = await User.findOne({
           $or: [
             { email: username.toLowerCase() },
             { usernameLower: username.toLowerCase() },
           ],
-        },
-        (err, user: UserDocument | undefined) => {
-          if (err) {
-            done(err);
-          } else if (!user) {
-            done(undefined, false, { message: `Email ${username} not found.` });
-          } else {
-            user.comparePassword(password, (e, isMatch) => {
-              if (e) done(e);
-              else if (isMatch) done(undefined, user);
-              else {
-                done(undefined, false, {
-                  message: 'Invalid email or password.',
-                });
-              }
+        });
+        if (!user) {
+          done(undefined, false, { message: `Email ${username} not found.` });
+          return;
+        }
+        user.comparePassword(password, (e, isMatch) => {
+          if (e) done(e);
+          else if (isMatch) {
+            done(undefined, user);
+          }
+          else {
+            done(undefined, false, {
+              message: 'Invalid email or password.',
             });
           }
-        },
-      );
+        });
+      }
+      catch (err) {
+        done(err);
+      }
     },
   ),
 );
@@ -78,27 +77,24 @@ export const isAuthenticated = (
   res: Response,
   next: NextFunction,
 ): void => {
-  if (req.isAuthenticated()) {
-    next();
-  } else {
-    res.redirect('/login');
-  }
+  if (req.isAuthenticated()) next();
+  else res.redirect('/login');
 };
 
 /**
- * Authorization Required middleware.
+ * TODO: Authorization Required middleware.
+ * Confirms that the user has access to the requested resource.
  */
-export const isAuthorized = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void => {
-  const provider = req.path.split('/').slice(-1)[0];
-
-  const user = req.user as UserDocument;
-  if (user.tokens.find((obj) => obj.kind === provider)) {
-    next();
-  } else {
-    res.redirect(`/auth/${provider}`);
-  }
+export const isAuthorized = (): // req: Request,
+// res: Response,
+// next: NextFunction,
+void => {
+  // const provider = req.path.split('/').slice(-1)[0];
+  // const user = req.user as UserDocument;
+  // if (user.tokens.find((obj) => obj.kind === provider)) {
+  //   next();
+  // }
+  // else {
+  //   res.redirect(`/auth/${provider}`);
+  // }
 };
